@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuários | Loja de Roupas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { background: #f5f7fa; font-family: 'Poppins', Arial, sans-serif; }
+    .container { background: #fff; padding: 32px 24px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.10); width: 100%; max-width: 460px; margin: 40px auto; }
+    h2 { color: #35386b; text-align: center; margin-bottom: 18px; font-weight: 600; }
+    form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+    form input[type="text"], form input[type="email"], form input[type="password"] { flex: 1 1 120px; padding: 10px 12px; border: 1.5px solid #d8e1fd; border-radius: 7px; font-size: 1rem; background: #f6faff; color: #222a4a; }
+    form button { background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%); color: #fff; border: none; border-radius: 7px; padding: 10px 18px; font-weight: 600; cursor: pointer; transition: background 0.18s; }
+    form button:hover { background: linear-gradient(90deg, #fc5c7d 0%, #6a82fb 100%); }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border-bottom: 1px solid #edf0fa; padding: 8px; text-align: left; }
+    th { background: #f4f8ff; color: #4e59a6; font-weight: 600; }
+    td:last-child { text-align: right; }
+    .btn-edit, .btn-delete { border: none; border-radius: 4px; padding: 5px 11px; margin-left: 5px; font-size: 0.97em; cursor: pointer; }
+    .btn-edit { background: #ffd86b; color: #665c00; }
+    .btn-edit:hover { background: #ffe7a7; }
+    .btn-delete { background: #ff6b6b; color: #fff; }
+    .btn-delete:hover { background: #ffb3b3; }
+    .error { color: #b73232; margin-bottom: 10px; text-align: center; }
+    .logout { float: right; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="logout" onclick="logout()">Sair</button>
+    <h2>Usuários</h2>
+    <div id="error" class="error"></div>
+    <form id="userForm">
+      <input type="text" id="name" placeholder="Nome" required>
+      <input type="email" id="email" placeholder="E-mail" required>
+      <input type="password" id="password" placeholder="Senha" required>
+      <button type="submit" id="saveBtn">Adicionar</button>
+    </form>
+    <table id="userTable">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Linhas via JS -->
+      </tbody>
+    </table>
+  </div>
+  <script>
+    let editId = null;
+
+    function showError(msg) {
+      document.getElementById('error').textContent = msg || '';
+    }
+
+    async function fetchUsers() {
+      const res = await fetch('/api/users');
+      if (res.status === 401) {
+        window.location = "/";
+        return [];
+      }
+      return res.json();
+    }
+
+    function renderTable(users) {
+      const tbody = document.querySelector("#userTable tbody");
+      tbody.innerHTML = "";
+      users.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.email}</td>
+          <td>
+            <button class="btn-edit" onclick="editUser(${user.id}, '${user.name}', '${user.email}')">Editar</button>
+            <button class="btn-delete" onclick="deleteUser(${user.id})">Excluir</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function reload() {
+      showError('');
+      const users = await fetchUsers();
+      renderTable(users);
+    }
+
+    function validateForm(name, email, password) {
+      if (!name || name.length < 3) return "Nome deve ter pelo menos 3 caracteres.";
+      if (!email || !/^[\w-.]+@[\w-]+\.[a-z]{2,}$/i.test(email)) return "E-mail inválido.";
+      if (!password || password.length < 4) return "Senha deve ter pelo menos 4 caracteres.";
+      return "";
+    }
+
+    document.getElementById("userForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const validationError = validateForm(name, email, password);
+      if (validationError) return showError(validationError);
+      try {
+        if (editId === null) {
+          const res = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+        } else {
+          const res = await fetch(`/api/users/${editId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          editId = null;
+          document.getElementById("saveBtn").textContent = "Adicionar";
+        }
+        this.reset();
+        reload();
+      } catch (err) {
+        showError(err.message);
+      }
+    };
+
+    window.editUser = function(id, name, email) {
+      document.getElementById("name").value = name;
+      document.getElementById("email").value = email;
+      document.getElementById("password").value = "";
+      editId = id;
+      document.getElementById("saveBtn").textContent = "Salvar";
+    };
+
+    window.deleteUser = async function(id) {
+      if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        reload();
+      } catch (err) {
+        showError(err.message);
+      }
+    };
+
+    window.logout = async function() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location = "/";
+    };
+
+    reload();
+  </script>
+</body>
+</html>
