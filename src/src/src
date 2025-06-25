@@ -1,0 +1,17 @@
+import express, { Request, Response, NextFunction } from "express";
+import sqlite3 from "sqlite3";
+import cors from "cors";
+import path from "path";
+import session from "express-session";
+
+// ... (restante do código)
+
+app.use(
+  session({
+    secret: "loja_roupas_secret",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// ... (restante do código)
