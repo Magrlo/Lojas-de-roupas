@@ -1,0 +1,9 @@
+loja-roupas/
+├── package.json
+├── server.js
+├── database.db
+├── public/
+│   ├── index.html      (tela de login)
+│   ├── crud.html       (CRUD de usuários)
+│   └── js/
+│       └── main.js
