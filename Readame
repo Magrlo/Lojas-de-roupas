@@ -1,0 +1,63 @@
+# Loja de Roupas
+
+Este é um projeto de exemplo para uma loja de roupas, incluindo:
+
+- Tela de login de usuário
+- CRUD de usuários (criar, ler, atualizar, excluir)
+- Banco de dados SQLite
+- Validação de dados no front-end e back-end
+
+## Estrutura do Projeto
+
+```
+/
+├── server.js
+├── package.json
+├── database.db
+└── public/
+    ├── index.html        # Tela de login
+    ├── crud.html         # CRUD de usuários
+```
+
+## Funcionalidades
+
+- **Login:** Permite o acesso apenas de usuários cadastrados.
+- **CRUD Usuários:** Gerencie usuários da loja (adicionar, editar, excluir, listar).
+- **Validação:** Regras para evitar dados inválidos, como campos obrigatórios, e-mail válido e senha mínima.
+
+## Instalação
+
+1. Clone este repositório:
+   ```sh
+   git clone https://github.com/seu-usuario/loja-roupas.git
+   cd loja-roupas
+   ```
+
+2. Instale as dependências:
+   ```sh
+   npm install
+   ```
+
+3. Inicie o servidor:
+   ```sh
+   npm start
+   ```
+
+4. Acesse no navegador:
+   ```
+   http://localhost:3000/
+   ```
+
+## Observações
+
+- O projeto utiliza Node.js, Express e SQLite.
+- Os arquivos HTML estão na pasta `public`.
+- As regras de validação estão aplicadas tanto no back-end quanto no front-end.
+
+## Contribuição
+
+Sinta-se à vontade para abrir issues ou pull requests para sugerir melhorias!
+
+---
+
+> Projeto desenvolvido para fins de estudo, como base para lojas virtuais e sistemas de cadastro.
